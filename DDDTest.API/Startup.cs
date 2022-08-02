@@ -4,6 +4,8 @@ using DDDTest.Application.Infrastrutures;
 using System.Reflection;
 using FluentValidation;
 using DDDTest.API.Framwork.ExceptionMethods;
+using EventStore.Client;
+using EventStore.ClientAPI;
 
 namespace DDDTest.API;
 public class Startup {
@@ -15,11 +17,26 @@ public class Startup {
        // services.AddShared();
         services.AddApplication();
         //services.AddInfrastructure(Configuration);
+
+
+
+
+
+        services.AddEventStore();
+
+
         services.AddControllers();
         services.AddDbContextCustom(Configuration);
         services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>(); 
         services.SwaggerSetup();
+
+
+
+
+   
     }
+
+ 
 
     public void Configure(IApplicationBuilder app, IWebHostEnvironment env) {
       

@@ -6,7 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace DDDTest.Domain.Aggregates.UserAggregate.Repositories {
-    public interface IUserRepositoryCommand :  IWriteRepository<Entities.User>{
+    public interface IUserRepositoryCommand :  IRepository<Entities.User>{
 
     }
 }

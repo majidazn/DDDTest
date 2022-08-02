@@ -19,14 +19,14 @@ public class RegisterUserCommandHandler : ICommandHandler<RegisterUserCommand, l
     #endregion
     public async Task<long> Handle(RegisterUserCommand request, CancellationToken cancellationToken) {
 
-        var password = request.RegisterUserDto.Password;
-        var avatar = request.RegisterUserDto.Avatar.ToBytes();
+        var password = request.Password;
+        var avatar = request.Avatar.ToBytes();
 
 
 
 
-        var user =new  Domain.Aggregates.UserAggregate.Entities.User(
-            _userDomainServices, request.RegisterUserDto.UserName, password, avatar);
+        var user =Domain.Aggregates.UserAggregate.Entities.User.Register(
+            _userDomainServices, request.UserName, password, avatar);
 
         await _userRepositoryCommand.CreateAsync(user, cancellationToken);
         await _userRepositoryCommand.SaveChangesAsync(cancellationToken);

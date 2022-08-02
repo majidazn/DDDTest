@@ -11,14 +11,19 @@ public class User : Entity, IAggregateRoot {
     public User() {
 
     }
-    public User(IUserDomainServices userDomainServices,
+ 
+    public User(
                 string userName,
                 string password,
-                byte[] avatar) =>
-        //UserName = userName;
-        //Password = password;
-        //Avatar = avatar;
-        Register(userDomainServices, userName, password, avatar);
+                byte[] avatar) {
+        UserName = userName;
+        Password = password;
+        Avatar = avatar;
+
+
+    }
+
+
     #endregion
     #region Properties
     public string UserName { get; private set; }
@@ -29,14 +34,16 @@ public class User : Entity, IAggregateRoot {
     #endregion
 
     #region Behaviors
-    public void  Register(IUserDomainServices userDomainServices, string userName, string password, byte[] avatar) {
+    public static User Register(IUserDomainServices userDomainServices, string userName, string password, byte[] avatar) {
         EnforceInvariants(userName, password, avatar);
         CheckRule(new UserNameMustBeUniqueRule(userDomainServices, userName));
         AddDomainEvent(new UserAddedDomainEvent(userName, password, avatar));
+       // _domainEvents.Add(new UserAddedDomainEvent(userName, password, avatar));
+        return new User(userName, password, avatar);
     }
 
     public void ChangePassword(string newPassword) {
-        Password=newPassword;
+        Password = newPassword;
     }
     #endregion
 

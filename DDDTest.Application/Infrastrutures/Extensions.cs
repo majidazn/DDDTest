@@ -30,7 +30,7 @@ public static class Extensions {
         //    .AddClasses(c => c.AssignableTo(typeof(IMediator)))
         //    .AsImplementedInterfaces()
         //    .WithScopedLifetime());
-
+        
 
 
         services.AddScoped<IUserDomainServices, UserDomainServices>();

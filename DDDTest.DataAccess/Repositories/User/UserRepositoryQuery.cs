@@ -1,6 +1,9 @@
 ﻿using DDDTest.DataAccess.Context;
 using DDDTest.Domain.Aggregates.UserAggregate.Dtos;
 using DDDTest.Domain.Aggregates.UserAggregate.Repositories;
+using DDDTest.Domain.Events;
+using EventStore.Client;
+using MediatR;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -10,20 +13,32 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace DDDTest.DataAccess.Repositories.User {
-    public class UserRepositoryQuery : ReadRepository<Domain.Aggregates.UserAggregate.Entities.User>, IUserRepositoryQuery {
+    public class UserRepositoryQuery : Repository<Domain.Aggregates.UserAggregate.Entities.User>, IUserRepositoryQuery {
         #region Fields
         private readonly UserBoundedContextQuery _context;
+        private readonly IMediator _mediator;
+        private readonly EventStoreClient _eventStoreClient;
+        public UserRepositoryQuery(UserBoundedContextQuery dbContext, IMediator mediator, EventStoreClient eventStoreClient, IHttpContextAccessor httpContextAccessor = null) : base(dbContext, mediator, eventStoreClient, httpContextAccessor) {
+            _context = dbContext;
+            _mediator = mediator;
+            _eventStoreClient = eventStoreClient;
+        }
         #endregion
         #region Constructors
-        public UserRepositoryQuery(UserBoundedContextQuery userBoundedContextQuery) {
-            _context = userBoundedContextQuery;
-        }
+
         #endregion
 
         #region Methods
 
         public Task<bool> IsUserNameUnique(string userName, CancellationToken cancellationToken)
             => _context.Users.AnyAsync(u => u.UserName == userName,cancellationToken);
+
+
+        public void CreateUser(UserAddedDomainEvent userAddedDomainEvent) {
+            _context.Users.AddAsync(new Domain.Aggregates.UserAggregate.Entities.User(userAddedDomainEvent.UserName,
+                userAddedDomainEvent.Password,userAddedDomainEvent.Avatar));
+            
+        }
 
         public async Task<IEnumerable<UserDto>> GetAllUsers() {
 

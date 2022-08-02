@@ -4,18 +4,26 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
+using DDDTest.DataAccess.Infrastrutures;
 using DDDTest.Domain.Framework.Repositories;
+using EventStore.Client;
+using MediatR;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 
 namespace DDDTest.DataAccess.Repositories;
-public class WriteRepository<T> : IRepository<T> where T : class {
+public class Repository<T> : IRepository<T> where T : class {
 
     protected readonly DbContext _dbContext;
     protected readonly IHttpContextAccessor _httpContextAccessor;
-    public WriteRepository(DbContext dbContext, IHttpContextAccessor httpContextAccessor = null) {
+    private readonly IMediator _mediator;
+    private readonly EventStoreClient _eventStoreClient;
+
+    public Repository(DbContext dbContext, IMediator mediator, EventStoreClient eventStoreClient, IHttpContextAccessor httpContextAccessor = null) {
         _dbContext = dbContext;
         _httpContextAccessor = httpContextAccessor;
+        _mediator = mediator ?? throw new ArgumentNullException(nameof(mediator));
+        _eventStoreClient = eventStoreClient;
 
     }
 
@@ -81,7 +89,19 @@ public class WriteRepository<T> : IRepository<T> where T : class {
     }
 
     public virtual async System.Threading.Tasks.Task<int> SaveChangesAsync(CancellationToken cancellationToken = default) {
-        return await _dbContext.SaveChangesAsync();
+        // Dispatch Domain Events collection. 
+        // Choices:
+        // A) Right BEFORE committing data (EF SaveChanges) into the DB will make a single transaction including  
+        // side effects from the domain event handlers which are using the same DbContext with "InstancePerLifetimeScope" or "scoped" lifetime
+        // B) Right AFTER committing data (EF SaveChanges) into the DB will make multiple transactions. 
+        // You will need to handle eventual consistency and compensatory actions in case of failures in any of the Handlers. 
+        await _mediator.DispatchDomainEventsAsync(_dbContext, _eventStoreClient);
+
+        // After executing this line all the changes (from the Command Handler and Domain Event Handlers) 
+        // performed through the DbContext will be committed
+        var result = await _dbContext.SaveChangesAsync(cancellationToken);
+
+        return result;
     }
 
     public virtual void Delete(T item) {
