@@ -20,7 +20,9 @@ namespace DDDTest.Application.EventStoreHandlers {
             var sp = services.BuildServiceProvider();
             var _userRepositoryQuery = sp.GetService<IUserRepositoryQuery>();
             _userRepositoryQuery.CreateUser(objState);
-            _userRepositoryQuery.SaveChangesAsync();
+           
+            
+            _userRepositoryQuery.SaveChanges();
 
 
 

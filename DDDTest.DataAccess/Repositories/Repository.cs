@@ -4,6 +4,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
+using System.Transactions;
 using DDDTest.DataAccess.Infrastrutures;
 using DDDTest.Domain.Framework.Repositories;
 using EventStore.Client;
@@ -46,7 +47,7 @@ public class Repository<T> : IRepository<T> where T : class {
         await _dbContext.Set<T>().AddAsync(item, cancellationToken);
 
 
-       // await this.SaveChangesAsync();
+        // await this.SaveChangesAsync();
 
 
         return item;
@@ -76,16 +77,8 @@ public class Repository<T> : IRepository<T> where T : class {
 
 
     public virtual void SaveChanges() {
-
-        try {
-
+     //  throw new Exception("error :-)");
             _dbContext.SaveChanges();
-
-        }
-        catch (Exception ex) {
-            var sb = new StringBuilder();
-        }
-
     }
 
     public virtual async System.Threading.Tasks.Task<int> SaveChangesAsync(CancellationToken cancellationToken = default) {
@@ -95,13 +88,36 @@ public class Repository<T> : IRepository<T> where T : class {
         // side effects from the domain event handlers which are using the same DbContext with "InstancePerLifetimeScope" or "scoped" lifetime
         // B) Right AFTER committing data (EF SaveChanges) into the DB will make multiple transactions. 
         // You will need to handle eventual consistency and compensatory actions in case of failures in any of the Handlers. 
-        await _mediator.DispatchDomainEventsAsync(_dbContext, _eventStoreClient);
+        //  await _mediator.DispatchDomainEventsAsync(_dbContext, _eventStoreClient);
+        var transactionOptions = new TransactionOptions {
+            IsolationLevel = IsolationLevel.ReadCommitted,
+            Timeout = TransactionManager.MaximumTimeout
+        };
+        using (var transaction = _dbContext.Database.BeginTransaction()) {
+
+
+            await _mediator.DispatchDomainEventsAsync(_dbContext, _eventStoreClient);
+            var result = await _dbContext.SaveChangesAsync(cancellationToken);
+            transaction.Commit();
+            return result;
+
+        }
+
+
+      //  using (var transaction = new TransactionScope(TransactionScopeOption.Required, transactionOptions,
+      //TransactionScopeAsyncFlowOption.Enabled)) {
+        
+
+      //      transaction.Complete();
+
+           
+      //  }
+
 
         // After executing this line all the changes (from the Command Handler and Domain Event Handlers) 
         // performed through the DbContext will be committed
-        var result = await _dbContext.SaveChangesAsync(cancellationToken);
 
-        return result;
+
     }
 
     public virtual void Delete(T item) {

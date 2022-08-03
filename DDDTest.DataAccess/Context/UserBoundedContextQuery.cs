@@ -1,4 +1,5 @@
-﻿using DDDTest.Domain.Aggregates.UserAggregate.Entities;
+﻿using DDDTest.DataAccess.Configurations;
+using DDDTest.Domain.Aggregates.UserAggregate.Entities;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -20,7 +21,7 @@ namespace DDDTest.DataAccess.Context {
 
         protected override void OnModelCreating(ModelBuilder modelBuilder) {
             base.OnModelCreating(modelBuilder);
-            // modelBuilder.ApplyConfiguration(new UserConfiguration());
+             modelBuilder.ApplyConfiguration(new UserConfiguration());
         }
     }
 }

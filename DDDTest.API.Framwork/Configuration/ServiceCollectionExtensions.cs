@@ -12,8 +12,8 @@ namespace DDDTest.API.Framwork.Configuration {
 
             //});
            
-            services.AddDbContext<UserBoundedContextCommand>(opt => opt.UseInMemoryDatabase("UserWriteDB"));
-            services.AddDbContext<UserBoundedContextQuery>(opt => opt.UseInMemoryDatabase("UserReadDB"));
+            services.AddDbContext<UserBoundedContextCommand>(opt => opt.UseNpgsql("Server=localhost;Port=5432;Database=WriteDB;User Id=sls;Password=123;"));
+            services.AddDbContext<UserBoundedContextQuery>(opt => opt.UseNpgsql("Server=localhost;Port=5432;Database=ReadDB;User Id=sls;Password=123;"));
 
 
         }

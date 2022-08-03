@@ -10,11 +10,12 @@ public static class EventStoreExtention {
          .Create("esdb://127.0.0.1:2113?tls=false&keepAliveTimeout=10000&keepAliveInterval=10000");
 
         var client = new EventStoreClient(settings);
+      
         services.AddSingleton(client);
         var persistClient = new EventStorePersistentSubscriptionsClient(settings);
         var userCredentials = new UserCredentials("admin", "changeit");
 
-        var persistentSettings = new EventStore.Client.PersistentSubscriptionSettings();
+        var persistentSettings = new EventStore.Client.PersistentSubscriptionSettings(startFrom: Position.End) ;
         persistClient.CreateAsync(
            nameof(UserAddedDomainEvent),
            $"{nameof(UserAddedDomainEvent)}-group",
