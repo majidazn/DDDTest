@@ -32,7 +32,8 @@ namespace DDDTest.DataAccess.Infrastrutures {
 
                 var eventStoreDataType = new EventData(Uuid.NewUuid(), domainEvent.GetType().Name, jsonPayload);
 
-                await eventStoreClient.AppendToStreamAsync(domainEvent.GetType().Name, StreamState.Any, new[] { eventStoreDataType });
+              await  eventStoreClient.AppendToStreamAsync(domainEvent.GetType().Name, StreamState.Any, new[] { eventStoreDataType });
+               
             }
 
 

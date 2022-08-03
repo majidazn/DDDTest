@@ -12,6 +12,9 @@
 
   <ItemGroup>
     <PackageReference Include="Boilerplate.AspNetCore" Version="3.0.0" />
+    <PackageReference Include="EventStore.Client" Version="21.2.2" />
+    <PackageReference Include="EventStore.Client.Grpc.PersistentSubscriptions" Version="22.0.0" />
+    <PackageReference Include="EventStore.Client.Grpc.Streams" Version="22.0.0" />
     <PackageReference Include="FluentValidation" Version="11.1.0" />
     <PackageReference Include="MediatR" Version="10.0.1" />
     <PackageReference Include="MediatR.Extensions.Microsoft.DependencyInjection" Version="10.0.1" />
