@@ -80,7 +80,7 @@ public class Repository<T> : IRepository<T> where T : class {
      //  throw new Exception("error :-)");
             _dbContext.SaveChanges();
     }
-
+  
     public virtual async System.Threading.Tasks.Task<int> SaveChangesAsync(CancellationToken cancellationToken = default) {
         // Dispatch Domain Events collection. 
         // Choices:
@@ -89,29 +89,21 @@ public class Repository<T> : IRepository<T> where T : class {
         // B) Right AFTER committing data (EF SaveChanges) into the DB will make multiple transactions. 
         // You will need to handle eventual consistency and compensatory actions in case of failures in any of the Handlers. 
         //  await _mediator.DispatchDomainEventsAsync(_dbContext, _eventStoreClient);
-        var transactionOptions = new TransactionOptions {
-            IsolationLevel = IsolationLevel.ReadCommitted,
-            Timeout = TransactionManager.MaximumTimeout
-        };
-        using (var transaction = _dbContext.Database.BeginTransaction()) {
+        //var transactionOptions = new TransactionOptions {
+        //    IsolationLevel = IsolationLevel.ReadCommitted,
+        //    Timeout = TransactionManager.MaximumTimeout
+        //};
+        //using (var transaction = _dbContext.Database.BeginTransaction()) {
+
+        await _mediator.DispatchDomainEventsAsync(_dbContext, _eventStoreClient);
+
+        //var result = await _dbContext.SaveChangesAsync(cancellationToken);
+          //  transaction.Commit();
+            return 1;
+
+        //}
 
 
-            await _mediator.DispatchDomainEventsAsync(_dbContext, _eventStoreClient);
-            var result = await _dbContext.SaveChangesAsync(cancellationToken);
-            transaction.Commit();
-            return result;
-
-        }
-
-
-      //  using (var transaction = new TransactionScope(TransactionScopeOption.Required, transactionOptions,
-      //TransactionScopeAsyncFlowOption.Enabled)) {
-        
-
-      //      transaction.Complete();
-
-           
-      //  }
 
 
         // After executing this line all the changes (from the Command Handler and Domain Event Handlers) 
